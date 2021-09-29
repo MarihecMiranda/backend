@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework import permissions, serializers
 from .models import CustomUser, Employee, Role
 from rest_framework.response import Response
-from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect, csrf_exempt
 from django.utils.decorators import method_decorator
 from django.contrib import auth
 from .serializers import UserSerializer, EmployeeSerializer, CustomUserSerializer
@@ -30,10 +30,13 @@ class SignupView(APIView):
         data = self.request.data
 
         #username = data['username']
+        first_name= data['first_name']
+        last_name= data['last_name']
+        address=data['address']
+        phone=data['phone']
         email = data['email']
         password = data['password']
         re_password  = data['re_password']
-        employee = data['employee']
         role = data['role']
 
         """Validamos que las contraseñas sean iguales"""
@@ -46,16 +49,23 @@ class SignupView(APIView):
                         return Response({ 'error': 'La contraseña debe tener al menos 6 caracteres' })
                     else:
                         user = User.objects.create_user(username=email, password=password)
-                        
-                        user = User.objects.get(id=user.id)
-                        emp= Employee.objects.get(id=employee)
-                        rol=Role.objects.get(id=role)
+                        user = User.objects.get(id=user.id)                        
+                            
+                        emp = Employee.objects.create(
+                              first_name=first_name,
+                              last_name=last_name,
+                              address=address,
+                              phone=phone
+                        )
+                        emp = Employee.objects.only('id').get(first_name=first_name, last_name=last_name)
 
-                        customUser= CustomUser.objects.create(
+                        role = Role.objects.get(id=role)
+
+                        CustomUser.objects.create(
                             user=user,
                             email=email, 
                             Employee=emp, 
-                            Role=rol
+                            Role=role
                             )
                     
                         return Response({ 'success': 'Usuario creado con exito' })
@@ -116,6 +126,7 @@ class DeleteAccountView(APIView):
         except:
             return Response({ 'error': 'Se produjo un error al intentar eliminar al usuario' })
 
+
 class GetUserView(APIView):
     def get(self, request, format=None):
         
@@ -151,3 +162,15 @@ class UpdateUserView(APIView):
 
         except:
             return Response({ 'error': 'Algo salió mal al actualizar el perfil' })
+
+class ListUserView(APIView):
+
+    permission_classes = (permissions.AllowAny, )
+    def get(self, request, format=None):
+        
+        try:
+            employee = Employee.objects.all()
+            employee = EmployeeSerializer(employee, many=True)
+            return Response(employee.data)
+        except:
+            return Response({ 'error': 'Algo salió mal al listar los Usuarios' })

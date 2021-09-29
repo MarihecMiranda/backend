@@ -1,11 +1,13 @@
+from django.db import models
+from django.db.models import fields
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import CustomUser
+from .models import CustomUser, Employee
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username')
+        fields = ('username')
 
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,5 +16,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ('first_name', 'last_name', )
+        model = Employee
+        fields = ('first_name', 'last_name', 'phone')
+

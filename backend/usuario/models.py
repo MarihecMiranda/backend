@@ -35,7 +35,7 @@ class Role(models.Model):
     status = models.BooleanField(default=True)
 
     def __str__(self):
-        return self.nombre
+        return self.name
 
     class Meta:  # pylint: disable=too-few-public-methods
         """Propiedades adicionales del modelo Role"""
